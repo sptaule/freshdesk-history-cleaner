@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "Freshdesk Cleaner",
+  "version": "0.1",
+  "description": "Hides history repeats in Freshdesk responses for cleaner reading.",
+  "permissions": [],
+  "host_permissions": [
+    "*://*.freshdesk.com/*"
+  ],
+  "action": {
+    "default_title": "Freshdesk Cleaner"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*.freshdesk.com/*"],
+      "js": ["contentScript.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
