@@ -1,24 +1,25 @@
 {
   "manifest_version": 3,
-  "name": "Freshdesk Cleaner",
-  "version": "0.1",
+  "name": "Freshdesk History Cleaner",
+  "version": "1.0",
   "description": "Hides history repeats in Freshdesk responses for cleaner reading.",
-  "permissions": [],
-  "host_permissions": [
-    "*://*.freshdesk.com/*"
-  ],
-  "action": {
-    "default_title": "Freshdesk Cleaner"
+  "host_permissions": ["*://*.freshdesk.com/*"],
+  "icons": {
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
   },
   "content_scripts": [
     {
       "matches": ["*://*.freshdesk.com/*"],
-      "js": ["contentScript.js"],
-      "run_at": "document_idle"
+      "js": ["contentScript.js"]
     }
   ],
-  "icons": {
-    "48": "icons/icon48.png",
-    "128": "icons/icon128.png"
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "{cfe32480-bdff-499b-b09e-29c9102083a3}",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
+    }
   }
 }
