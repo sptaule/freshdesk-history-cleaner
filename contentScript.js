@@ -1,7 +1,7 @@
 (() => {
     'use strict';
 
-    console.log('[Freshdesk Cleaner] Script loaded.');
+    console.log('[Freshdesk History Cleaner] Script loaded.');
 
     // Configuration
     const CONFIG = {
@@ -10,7 +10,6 @@
             reprise: `
                 div[style*="border:none;border-top:solid #E1E1E1 1.0pt;padding:3.0pt 0cm 0cm 0cm"],
                 hr[style*="display:inline-block"][style*="width:98%"],
-                hr[align="center"],
                 hr
             `,
             loadMore: '.more-block.text--xsmall.async-button.default.ember-view',
@@ -63,7 +62,7 @@
                     node.parentNode?.replaceChild(span, node);
                 }
             } catch (e) {
-                console.warn('[Freshdesk Cleaner] Ignored deleted node during cleaning.');
+                console.warn('[Freshdesk History Cleaner] Ignored deleted node during cleaning.');
             }
             node = next;
         }
@@ -83,7 +82,7 @@
     };
 
     const cleanMessages = () => {
-        console.log('[Freshdesk Cleaner] Starting cleaning...');
+        console.log('[Freshdesk History Cleaner] Starting cleaning...');
 
         try {
             const messages = document.querySelectorAll(CONFIG.selectors.message);
@@ -99,30 +98,47 @@
                 cleanedCount++;
             });
 
-            console.log(`[Freshdesk Cleaner] ${cleanedCount} message(s) nettoyé(s).`);
+            console.log(`[Freshdesk History Cleaner] ${cleanedCount} message(s) nettoyé(s).`);
             showNotification(`${cleanedCount} message(s) nettoyé(s).`);
         } catch (err) {
-            console.error('[Freshdesk Cleaner] Cleaning error:', err);
+            console.error('[Freshdesk History Cleaner] Cleaning error:', err);
         }
     };
 
     const restoreMessages = () => {
-        let restoredCount = 0;
-        
-        messageBackups.forEach((backup, msg) => {
-            if (msg && backup.html) {
-                msg.innerHTML = backup.html;
-                restoredCount++;
-            }
-        });
-        
-        messageBackups.clear();
-        cleaningActive = false;
+		let restoredCount = 0;
+		
+		messageBackups.forEach((backup, msg) => {
+			if (msg && backup.html) {
+				safelyRestoreContent(msg, backup.html);
+				restoredCount++;
+			}
+		});
+		
+		messageBackups.clear();
+		cleaningActive = false;
 
-        document.getElementById('fdc-clean-btn').textContent = CONFIG.button.clean;
-        showNotification(`${restoredCount} message(s) restauré(s).`);
-        console.log(`[Freshdesk Cleaner] ${restoredCount} message(s) restauré(s).`);
-    };
+		document.getElementById('fdc-clean-btn').textContent = CONFIG.button.clean;
+		showNotification(`${restoredCount} message(s) restauré(s).`);
+		console.log(`[Freshdesk History Cleaner] ${restoredCount} message(s) restauré(s).`);
+	};
+	
+	const safelyRestoreContent = (element, html) => {
+		try {
+			const parser = new DOMParser();
+			const doc = parser.parseFromString(html, 'text/html');
+			
+			while (element.firstChild) {
+				element.removeChild(element.firstChild);
+			}
+			
+			Array.from(doc.body.childNodes).forEach(child => {
+				element.appendChild(child);
+			});
+		} catch (error) {
+			console.error('[Freshdesk History Cleaner] Restoration error:', error);
+		}
+	};
 
     // UI components
     const showNotification = (text) => {
@@ -197,7 +213,7 @@
         container.appendChild(createButton());
         
         navbarAdmin.parentNode.insertBefore(container, navbarAdmin.nextSibling);
-        console.log('[Freshdesk Cleaner] Button integrated into navbar.');
+        console.log('[Freshdesk History Cleaner] Button integrated into navbar.');
     };
 
     const activateCleaning = () => {
@@ -231,7 +247,7 @@
     const observeChanges = () => {
         const loadMoreButton = document.querySelector(CONFIG.selectors.loadMore);
         if (!loadMoreButton) {
-            console.log('[Freshdesk Cleaner] No "load more messages" button detected.');
+            console.log('[Freshdesk History Cleaner] No "load more messages" button detected.');
             return;
         }
 
@@ -256,7 +272,7 @@
             lastExecution = Date.now();
             observer.disconnect();
 
-            console.log('[Freshdesk Cleaner] New messages detected, cleaning...');
+            console.log('[Freshdesk History Cleaner] New messages detected, cleaning...');
             
             setTimeout(() => {
                 cleanMessages();
@@ -268,7 +284,7 @@
         });
 
         observer.observe(conversationArea, { childList: true, subtree: true });
-        console.log('[Freshdesk Cleaner] New messages observer activated.');
+        console.log('[Freshdesk History Cleaner] New messages observer activated.');
     };
 
     // Initialization
@@ -282,11 +298,11 @@
 
     function init() {
         if (!isTicketPage()) {
-            console.log('[Freshdesk Cleaner] Not a ticket page, skipping initialization.');
+            console.log('[Freshdesk History Cleaner] Not a ticket page, skipping initialization.');
             return;
         }
         
-        console.log('[Freshdesk Cleaner] Ticket page detected, initializing...');
+        console.log('[Freshdesk History Cleaner] Ticket page detected, initializing...');
         observeInterface();
     }
 })();
